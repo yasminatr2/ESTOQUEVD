@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Pallet</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+</head>
+<body>
+    <header>Grupo Oboticário VD</header>
+    <div class="form-container">
+        <form id="produtoForm">
+            <h1>Cadastro de Produtos</h1>
+            <hr>
+            <label for="rua">Rua:</label>
+            <input type="number" id="rua" name="rua" required><br><br>
+
+            <label for="rack">Rack:</label>
+            <input type="number" id="rack" name="rack" required><br><br>
+
+            <label for="altura">Altura:</label>
+            <input type="number" id="altura" name="altura" required><br><br>
+
+            <label for="posicao">Posição:</label>
+            <input type="text" id="posicao" name="posicao" maxlength="1" required><br><br>
+
+            <label for="codigo">Código do Produto:</label>
+            <input type="text" id="codigo" name="codigo" required><br><br>
+
+            <label for="produto">Nome do Produto:</label>
+            <input type="text" id="produto" name="produto" required><br><br>
+
+            <label for="quantidade">Quantidade:</label>
+            <input type="number" id="quantidade" name="quantidade" required><br><br>
+
+            <label for="categoria">Categoria:</label>
+            <input type="text" id="categoria" name="categoria" required><br><br>
+
+            <button type="button" onclick="cadastrarProduto()">cadastrar Produto</button>
+            
+        </form>
+<script>
+    // Função para cadastrar o produto
+function cadastrarProduto() {
+    const form = document.getElementById('produtoForm');
+    const formData = new FormData(form);
+    const data = {};
+    formData.forEach((value, key) => (data[key] = value));
+
+    fetch('http://localhost:3000/cadastrar', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        alert(result.message);
+        form.reset(); // Limpa os campos do formulário após o cadastro
+        carregarResultados(); // Atualiza os resultados na tela
+    })
+    .catch(error => console.error('Erro:', error));
+}
+
+// Função para atualizar o produto
+function atualizarProduto() {
+    const form = document.getElementById('produtoForm');
+    const formData = new FormData(form);
+    const data = {};
+    formData.forEach((value, key) => (data[key] = value));
+
+    fetch('http://localhost:3000/atualizar', {
+        method: 'PUT', // Método PUT para atualização
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        alert(result.message);
+        form.reset();
+        carregarResultados();
+    })
+    .catch(error => console.error('Erro:', error));
+}
+
+// Função para carregar resultados (opcional, se houver uma lista)
+function carregarResultados() {
+    // Aqui você pode implementar a lógica para exibir os produtos cadastrados na tela.
+}
+
+
+</script>
+</body>
+</html>
