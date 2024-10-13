@@ -12,6 +12,7 @@
     <header>Grupo Oboticário VD</header>
     <div class="form-container">
         <form id="produtoForm">
+            <a href="/"><i class="bi bi-arrow-left"></i></a>
             <h1>Cadastro de Produtos</h1>
             <hr>
             <label for="rua">Rua:</label>
@@ -59,8 +60,8 @@ function cadastrarProduto() {
     .then(response => response.json())
     .then(result => {
         alert(result.message);
-        form.reset(); // Limpa os campos do formulário após o cadastro
-        carregarResultados(); // Atualiza os resultados na tela
+        form.reset(); 
+        carregarResultados(); 
     })
     .catch(error => console.error('Erro:', error));
 }
@@ -73,7 +74,7 @@ function atualizarProduto() {
     formData.forEach((value, key) => (data[key] = value));
 
     fetch('http://localhost:3000/atualizar', {
-        method: 'PUT', // Método PUT para atualização
+        method: 'PUT', 
         headers: {
             'Content-Type': 'application/json'
         },
@@ -87,12 +88,6 @@ function atualizarProduto() {
     })
     .catch(error => console.error('Erro:', error));
 }
-
-// Função para carregar resultados (opcional, se houver uma lista)
-function carregarResultados() {
-    // Aqui você pode implementar a lógica para exibir os produtos cadastrados na tela.
-}
-
 
 </script>
 </body>

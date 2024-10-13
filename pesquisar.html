@@ -5,27 +5,26 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="styleP.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
     <title>Página Pesquisa</title>
 </head>
 <body>
+    
     <form id="pesquisaForm">
+        <a href="/"><i class="bi bi-arrow-left"></i></a>
         <h1>Pesquisar Produto</h1>
         <label for="pesquisaCodigo">Código do Produto:</label>
         <input type="text" id="pesquisaCodigo" name="pesquisaCodigo" required>
-
         <button type="button" onclick="pesquisarProduto()">Pesquisar Produto</button>
-        <button class ="deletar" type="button" onclick="deletarProduto()">Deletar Produto</button>
+        <button class="deletar" type="button" onclick="deletarProduto()">Deletar Produto</button>
     </form>
 
     <div id="resultadoPesquisa"></div>
 
     <script>
-        // Função para carregar resultados da pesquisa no localStorage
         function carregarResultados() {
             const resultadoDiv = document.getElementById('resultadoPesquisa');
-
-            // Limpa o conteúdo anterior dos resultados
-            resultadoDiv.innerHTML = ''; // Limpa os resultados ao carregar a página
+            resultadoDiv.innerHTML = '';
 
             const dados = localStorage.getItem('dadosProduto');
 
@@ -40,17 +39,16 @@
                     html += `<p>Posição: ${item.posicao}</p>`;
                     html += `<p>Quantidade: ${item.quantidade}</p>`;
                     html += `<p>Categoria: ${item.categoria}</p>`;
+                    html += `<p>Descrição: ${item.produto}</p>`;
+                    html += `<hr>`; // Linha separadora
                 });
                 html += "</div>";
                 resultadoDiv.innerHTML = html;
             }
         }
 
-        // Função para pesquisar o produto
         function pesquisarProduto() {
             const codigo = document.getElementById('pesquisaCodigo').value;
-
-            // Limpa o conteúdo anterior dos resultados antes de fazer a nova pesquisa
             const resultadoDiv = document.getElementById('resultadoPesquisa');
             resultadoDiv.innerHTML = ''; // Limpa os resultados antes de mostrar novos
 
@@ -59,45 +57,22 @@
             })
             .then(response => response.json())
             .then(result => {
-                // Log dos dados retornados
-                console.log('Dados retornados:', result);
-
                 if (result.success) {
                     let html = "<h3 class='resultado-titulo'>Informações do Produto:</h3>";
                     html += "<div class='informacoes-produto'>";
 
-                    const informacoes = {
-                        rua: null,
-                        racks: new Set(),
-                        alturas: new Set(),
-                        posicoes: new Set(),
-                        quantidades: []
-                    };
-
-                    // Coletar informações e agregar
                     result.dados.forEach(item => {
-                        if (informacoes.rua === null) {
-                            informacoes.rua = item.rua; // Atribui a rua apenas uma vez
-                        }
-                        informacoes.racks.add(item.rack); // Agrega racks
-                        informacoes.alturas.add(item.altura); // Agrega alturas
-                        informacoes.posicoes.add(item.posicao); // Agrega posições
-                        informacoes.quantidades.push(item.quantidade); // Adiciona quantidade
+                        html += `<p>RUA: ${item.rua}</p>`;
+                        html += `<p>RACK: ${item.rack}</p>`;
+                        html += `<p>ALTURA: ${item.altura}</p>`;
+                        html += `<p>POSIÇÃO: ${item.posicao}</p>`;
+                        html += `<p>QUANTIDADE: ${item.quantidade}</p>`;
+                        html += `<p>CATEGORIA: ${item.categoria}</p>`;
+                        html += `<p>DESCRIÇÃO: ${item.produto}</p>`;
+                        html += `<hr>`; // Linha separadora
                     });
 
-                    // Log para verificar as posições agregadas
-                    console.log('Posições agregadas:', Array.from(informacoes.posicoes));
-
-                    // Montar a saída
-                    html += `<p>RUA: ${informacoes.rua}</p>`;
-                    html += `<p>RACK: ${Array.from(informacoes.racks).join(', ')}</p>`;
-                    html += `<p>ALTURA: ${Array.from(informacoes.alturas).join(', ')}</p>`;
-                    html += `<p>POSIÇÃO: ${Array.from(informacoes.posicoes).join(', ')}</p>`;
-                    html += `<p>QUANTIDADE: ${informacoes.quantidades.join(', ')}</p>`;
-                    html += "</div>";
-
                     resultadoDiv.innerHTML = html;
-
                     localStorage.setItem('dadosProduto', JSON.stringify(result.dados));
                 } else {
                     resultadoDiv.innerHTML = `<p>${result.message}</p>`;
@@ -106,27 +81,41 @@
             .catch(error => console.error('Erro:', error));
         }
 
-        // Função para deletar o produto
         function deletarProduto() {
             const codigo = document.getElementById('pesquisaCodigo').value;
-
-            fetch(`http://localhost:3000/deletar/${codigo}`, {
-                method: 'DELETE',
+            fetch(`http://localhost:3000/pesquisar/${codigo}`, {
+                method: 'GET',
             })
             .then(response => response.json())
             .then(result => {
-                alert(result.message);
-                carregarResultados(); // Atualiza os resultados
+                if (result.success) {
+                    const posicoes = result.dados.map(item => item.posicao);
+                    const posicaoParaDeletar = prompt("Qual posição você deseja deletar? Opções: " + posicoes.join(', '));
+
+                    if (posicoes.includes(posicaoParaDeletar)) {
+                        fetch(`http://localhost:3000/deletar/${codigo}/${posicaoParaDeletar}`, {
+                            method: 'DELETE',
+                        })
+                        .then(response => response.json())
+                        .then(result => {
+                            if (result.success) {
+                                alert(result.message);
+                                localStorage.removeItem('dadosProduto'); // Remove do localStorage
+                                document.getElementById('resultadoPesquisa').innerHTML = ''; // Limpa o resultado da pesquisa
+                            } else {
+                                alert('Erro ao deletar o produto: ' + result.message);
+                            }
+                        })
+                        .catch(error => console.error('Erro:', error));
+                    } else {
+                        alert("Posição inválida!");
+                    }
+                } else {
+                    alert('Erro ao pesquisar o produto: ' + result.message);
+                }
             })
             .catch(error => console.error('Erro:', error));
         }
-
-        // Limpa resultados ao carregar a página e carrega resultados do localStorage
-        window.onload = () => {
-            carregarResultados();
-            const resultadoDiv = document.getElementById('resultadoPesquisa');
-            resultadoDiv.innerHTML = ''; // Garante que a div está vazia ao carregar a página
-        };
     </script>
 </body>
 </html>

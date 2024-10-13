@@ -7,17 +7,19 @@ const path = require('path');
 const app = express();
 app.use(bodyParser.json());
 
-// Servir o arquivo CSS diretamente se ele estiver na mesma pasta que o server.js
 app.get('/style.css', (req, res) => {
-    res.sendFile(path.join(__dirname, 'style.css')); // Nome do arquivo CSS
+    res.sendFile(path.join(__dirname, 'style.css'));
 });
 
 // Rota para servir o formulário HTML
 app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html')); 
+});
+app.get('/pallet_simulator.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'pallet_simulator.html')); // Nome do arquivo HTML
 });
 
-app.get('/pesquisar', (req, res) => {
+app.get('/pesquisar.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'pesquisar.html')); // Nome do arquivo HTML
 });
 
@@ -25,13 +27,10 @@ app.get('/styleP.css', (req, res) => {
     res.sendFile(path.join(__dirname, 'styleP.css')); // Nome do arquivo CSS
 });
 
-// Corrigindo a rota para servir o index.html dentro da pasta pastaInicial
-app.get('/index.html', (req, res) => {
-    res.sendFile(path.join(__dirname,  'index.html')); // Corrigido para apontar para o diretório correto
-});
+
 
 app.get('/styleindex.css', (req, res) => {
-    res.sendFile(path.join(__dirname,  'styleindex.css')); // Corrigido para apontar para o diretório correto
+    res.sendFile(path.join(__dirname, 'styleindex.css')); 
 });
 
 // Rota para cadastrar produto
@@ -64,8 +63,7 @@ app.post('/cadastrar', (req, res) => {
         const data = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
         data.push(novoProduto);
 
-        // Remover entradas vazias
-        const novosDados = data.filter(item => item.codigo); // Filtra para remover produtos sem código
+        const novosDados = data.filter(item => item.codigo); 
 
         const newWorksheet = XLSX.utils.json_to_sheet(novosDados);
         workbook.Sheets['Base'] = newWorksheet;
@@ -88,37 +86,22 @@ app.get('/pesquisar/:codigo', (req, res) => {
             const worksheet = workbook.Sheets['Base'];
             const data = XLSX.utils.sheet_to_json(worksheet);
 
-            // Filtrar itens pelo código
-            const resultados = data.filter(item => 
+
+            const resultados = data.filter(item =>
                 item.codigo && item.codigo.trim() === codigoPesquisado
             );
 
             if (resultados.length > 0) {
-                // Agrupar posições em uma única linha
-                const agrupados = {};
-                resultados.forEach(item => {
-                    const key = `${item.rua}-${item.rack}-${item.altura}-${item.codigo}-${item.quantidade}-${item.categoria}`;
-                    if (!agrupados[key]) {
-                        agrupados[key] = {
-                            posicoes: [] // Inicializa um array para armazenar posições
-                        };
-                    }
-                    agrupados[key].posicoes.push(item.posicao); // Aqui use item.posicao sem acento
-                });
-
-                // Converte o objeto agrupado de volta para um array
-                const resposta = Object.keys(agrupados).map(key => {
-                    const [rua, rack, altura, codigo, quantidade, categoria] = key.split('-');
-                    return {
-                        rua: rua,
-                        rack: rack,
-                        altura: altura,
-                        codigo: codigo,
-                        quantidade: quantidade,
-                        categoria: categoria,
-                        posicao: agrupados[key].posicoes.join(', ') // Converte posições em uma string
-                    };
-                });
+                const resposta = resultados.map(item => ({
+                    rua: item.rua,
+                    rack: item.rack,
+                    altura: item.altura,
+                    codigo: item.codigo,
+                    produto: item.produto,
+                    quantidade: item.quantidade,
+                    categoria: item.categoria,
+                    posicao: item.posicao 
+                }));
 
                 res.json({ success: true, dados: resposta });
             } else {
@@ -134,8 +117,9 @@ app.get('/pesquisar/:codigo', (req, res) => {
 });
 
 // Rota para deletar produto
-app.delete('/deletar/:codigo', (req, res) => {
+app.delete('/deletar/:codigo/:posicao', (req, res) => {
     const codigoParaDeletar = req.params.codigo.trim();
+    const posicaoParaDeletar = req.params.posicao.trim();
 
     try {
         if (fs.existsSync('estoque.xlsx')) {
@@ -143,10 +127,10 @@ app.delete('/deletar/:codigo', (req, res) => {
             const worksheet = workbook.Sheets['Base'];
             const data = XLSX.utils.sheet_to_json(worksheet);
 
-            // Filtrar itens, mantendo aqueles que não têm o código a ser deletado
-            const novosDados = data.filter(item => item.codigo !== codigoParaDeletar);
+            
+            const novosDados = data.filter(item => !(item.codigo === codigoParaDeletar && item.posicao === posicaoParaDeletar));
 
-            // Se a quantidade de dados não mudou, significa que não há produto para deletar
+         
             if (novosDados.length === data.length) {
                 return res.json({ success: false, message: 'Produto não encontrado para deleção.' });
             }
@@ -164,6 +148,7 @@ app.delete('/deletar/:codigo', (req, res) => {
         res.status(500).json({ message: 'Erro ao deletar o produto.' });
     }
 });
+
 
 app.listen(3000, () => {
     console.log('Servidor rodando na porta 3000');

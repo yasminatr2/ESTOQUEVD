@@ -15,18 +15,19 @@ body {
     font-family: Arial, Helvetica, sans-serif;
 }
 
-.container1, .container2 {
+.container1,
+.container2 {
     background-color: #232021;
-    padding: 5rem; 
-    width: 300px; 
-    height: 300px; 
+    padding: 5rem;
+    width: 300px;
+    height: 300px;
     border-radius: 10px;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-a{
+a {
     padding: 25px;
     font-size: 15px;
     border-radius: 5px;
@@ -43,32 +44,32 @@ a:hover {
     color: #232021;
     transition: 0.2s;
 }
-.bi-search{
+
+.bi-search {
     margin-left: 6px;
 
     font-size: 35px;
     color: aliceblue;
     background-color: #109152;
     padding: 25px;
-    border-top-right-radius:  10px;
+    border-top-right-radius: 10px;
     border-bottom-right-radius: 10px;
 }
-.bi-plus-lg{
+
+.bi-plus-lg {
     margin-left: 6px;
 
     font-size: 35px;
     color: aliceblue;
     background-color: #109152;
     padding: 25px;
-    border-top-right-radius:  10px;
+    border-top-right-radius: 10px;
     border-bottom-right-radius: 10px;
 }
-header{
+
+header {
+    margin-top: 4rem;
     font-family: Arial, Helvetica, sans-serif;
     text-align: center;
-}
-img{
-    width: 20%;
-    margin-bottom: 1rem;
-    margin-top: 3rem;
+    color: aliceblue;
 }
