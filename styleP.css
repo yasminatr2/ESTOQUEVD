@@ -74,11 +74,6 @@ button:hover {
     color: #007BFF;
 }
 
-hr {
-    border: none; 
-    border-top: 1px solid #ccc; 
-    margin: 10px 0; 
-}
 
 .informacoes-produto p {
     word-spacing: -0.5px;
@@ -94,7 +89,7 @@ hr {
 }
 
 .deletar:hover {
-    background-color: rgb(207, 81, 81);
+    background-color: rgb(167, 60, 60);
 }
 
 .bi {
@@ -115,7 +110,19 @@ hr {
 }
 hr {
     border: none; 
-    border-top: 1px solid #0d834a; 
+    border-top: 1px solid #88b8a0; 
     margin: 10px 0; 
     width: 100%;
+}
+
+.bntCrud{
+    display:flex;
+    flex-wrap: row;
+    gap:15px;
+}
+.atualizar{
+    background-color: #007BFF;
+}
+.atualizar:hover{
+    background-color: #0368d4;
 }

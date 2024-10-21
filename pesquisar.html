@@ -15,8 +15,11 @@
         <h1>Pesquisar Produto</h1>
         <label for="pesquisaCodigo">Código do Produto:</label>
         <input type="text" id="pesquisaCodigo" name="pesquisaCodigo" required>
+        <div class="bntCrud">
         <button type="button" onclick="pesquisarProduto()">Pesquisar Produto</button>
+        <button class="atualizar" type="button" onclick="atualizarProduto()">Atualizar Produto</button>
         <button class="deletar" type="button" onclick="deletarProduto()">Deletar Produto</button>
+        </div>
     </form>
 
     <div id="resultadoPesquisa"></div>
@@ -116,6 +119,44 @@
             })
             .catch(error => console.error('Erro:', error));
         }
+
+        //ARRUMAR, NAO FUNCIONA
+        function atualizarProduto() {
+    const codigo = document.getElementById('pesquisaCodigo').value;
+    fetch(`http://localhost:3000/pesquisar/${codigo}`, {
+        method: 'GET',
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            const posicoes = result.dados.map(item => item.posicao);
+            const posicaoParaAtualizar = prompt("Qual posição você deseja atualizar? Opções: " + posicoes.join(', '));
+
+            if (posicoes.includes(posicaoParaAtualizar)) {
+                fetch(`http://localhost:3000/atualizar/${codigo}/${posicaoParaAtualizar}`, {
+                    method: 'PUT', // ou PATCH dependendo da sua API
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        alert(result.message);
+                        localStorage.removeItem('dadosProduto'); // Remove do localStorage
+                        document.getElementById('resultadoPesquisa').innerHTML = ''; // Limpa o resultado da pesquisa
+                    } else {
+                        alert('Erro ao atualizar o produto: ' + result.message);
+                    }
+                })
+                .catch(error => console.error('Erro:', error));
+            } else {
+                alert("Posição inválida!");
+            }
+        } else {
+            alert('Erro ao pesquisar o produto: ' + result.message);
+        }
+    })
+    .catch(error => console.error('Erro:', error));
+}
+
     </script>
 </body>
 </html>
