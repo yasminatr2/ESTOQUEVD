@@ -122,51 +122,52 @@
 
         //ARRUMAR, NAO FUNCIONA
         function atualizarProduto() {
-        const codigo = document.getElementById('pesquisaCodigo').value.toLowerCase(); // Converte para minúsculas
-        fetch(`http://localhost:3000/pesquisar/${codigo}`, {
-            method: 'GET',
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (result.success) {
-                const posicoes = result.dados.map(item => item.posicao);
-                const posicaoParaAtualizar = prompt("Qual posição você deseja atualizar? Opções: " + posicoes.join(', '));
+    const codigo = document.getElementById('pesquisaCodigo').value.toLowerCase(); // Converte para minúsculas
+    fetch(`http://localhost:3000/pesquisar/${codigo}`, {
+        method: 'GET',
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            const posicoes = result.dados.map(item => item.posicao);
+            const posicaoParaAtualizar = prompt("Qual posição você deseja atualizar? Opções: " + posicoes.join(', '));
 
-                if (posicoes.includes(posicaoParaAtualizar)) {
-                    const campoParaAtualizar = prompt("Qual campo você deseja atualizar? (ex: rua, rack, altura, quantidade, categoria, produto)");
-                    const novoValor = prompt(`Informe o novo valor para ${campoParaAtualizar}`);
+            if (posicoes.includes(posicaoParaAtualizar)) {
+                const campoParaAtualizar = prompt("Qual campo você deseja atualizar? (ex: rua, rack, altura, quantidade, categoria, produto)");
+                const novoValor = prompt(`Informe o novo valor para ${campoParaAtualizar}`);
 
-                    const dadosAtualizados = {
-                        [campoParaAtualizar]: novoValor
-                    };
+                const dadosAtualizados = {
+                    [campoParaAtualizar]: novoValor
+                };
 
-                    fetch(`http://localhost:3000/atualizar/${codigo}/${posicaoParaAtualizar}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(dadosAtualizados)
-                    })
-                    .then(response => response.json())
-                    .then(result => {
-                        if (result.success) {
-                            alert(result.message);
-                            localStorage.removeItem('dadosProduto'); // Remove do localStorage
-                            document.getElementById('resultadoPesquisa').innerHTML = ''; // Limpa o resultado da pesquisa
-                        } else {
-                            alert('Erro ao atualizar o produto: ' + result.message);
-                        }
-                    })
-                    .catch(error => console.error('Erro:', error));
-                } else {
-                    alert("Posição inválida!");
-                }
+                fetch(`http://localhost:3000/atualizar/${codigo}/${posicaoParaAtualizar}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dadosAtualizados)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        alert(result.message);
+                        localStorage.removeItem('dadosProduto'); // Remove do localStorage
+                        document.getElementById('resultadoPesquisa').innerHTML = ''; // Limpa o resultado da pesquisa
+                    } else {
+                        alert('Erro ao atualizar o produto: ' + result.message);
+                    }
+                })
+                .catch(error => console.error('Erro:', error));
             } else {
-                alert('Erro ao pesquisar o produto: ' + result.message);
+                alert("Posição inválida!");
             }
-        })
-        .catch(error => console.error('Erro:', error));
-    }
+        } else {
+            alert('Erro ao pesquisar o produto: ' + result.message);
+        }
+    })
+    .catch(error => console.error('Erro:', error));
+}
+
 
     </script>
 </body>

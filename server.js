@@ -149,6 +149,48 @@ app.delete('/deletar/:codigo/:posicao', (req, res) => {
     }
 });
 
+// Rota para atualizar um produto
+app.put('/atualizar/:codigo/:posicao', (req, res) => {
+    const codigoParaAtualizar = req.params.codigo.trim();
+    const posicaoParaAtualizar = req.params.posicao.trim();
+    const atualizacoes = req.body; // Os campos e valores que o usuário deseja atualizar
+
+    try {
+        if (fs.existsSync('estoque.xlsx')) {
+            const workbook = XLSX.readFile('estoque.xlsx');
+            const worksheet = workbook.Sheets['Base'];
+            const data = XLSX.utils.sheet_to_json(worksheet);
+
+            // Localiza o produto que deve ser atualizado
+            const produtoIndex = data.findIndex(item => item.codigo === codigoParaAtualizar && item.posicao === posicaoParaAtualizar);
+
+            if (produtoIndex === -1) {
+                return res.json({ success: false, message: 'Produto não encontrado para atualização.' });
+            }
+
+            // Atualiza os campos fornecidos
+            Object.keys(atualizacoes).forEach(campo => {
+                if (data[produtoIndex][campo] !== undefined) {
+                    data[produtoIndex][campo] = atualizacoes[campo];
+                }
+            });
+
+            // Atualiza a planilha
+            const newWorksheet = XLSX.utils.json_to_sheet(data);
+            workbook.Sheets['Base'] = newWorksheet;
+            XLSX.writeFile(workbook, 'estoque.xlsx');
+
+            res.json({ success: true, message: 'Produto atualizado com sucesso!' });
+        } else {
+            res.json({ success: false, message: 'Planilha de estoque não encontrada.' });
+        }
+    } catch (error) {
+        console.error("Erro ao atualizar o produto:", error);
+        res.status(500).json({ message: 'Erro ao atualizar o produto.' });
+    }
+});
+
+// rota para atualizar
 
 app.listen(3000, () => {
     console.log('Servidor rodando na porta 3000');
