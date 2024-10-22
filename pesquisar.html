@@ -16,9 +16,9 @@
         <label for="pesquisaCodigo">Código do Produto:</label>
         <input type="text" id="pesquisaCodigo" name="pesquisaCodigo" required>
         <div class="bntCrud">
-        <button type="button" onclick="pesquisarProduto()">Pesquisar Produto</button>
-        <button class="atualizar" type="button" onclick="atualizarProduto()">Atualizar Produto</button>
-        <button class="deletar" type="button" onclick="deletarProduto()">Deletar Produto</button>
+            <button type="button" onclick="pesquisarProduto()">Pesquisar Produto</button>
+            <button class="atualizar" type="button" onclick="atualizarProduto()">Atualizar Produto</button>
+            <button class="deletar" type="button" onclick="deletarProduto()">Deletar Produto</button>
         </div>
     </form>
 
@@ -28,22 +28,19 @@
         function carregarResultados() {
             const resultadoDiv = document.getElementById('resultadoPesquisa');
             resultadoDiv.innerHTML = '';
-
             const dados = localStorage.getItem('dadosProduto');
-
             if (dados) {
                 const resultados = JSON.parse(dados);
                 let html = "<h3 class='resultado-titulo'>Informações do Produto:</h3>";
                 html += "<div class='informacoes-produto'>";
                 resultados.forEach(item => {
-                    html += `<p>Rua: ${item.rua}</p>`;
-                    html += `<p>Rack: ${item.rack}</p>`;
-                    html += `<p>Altura: ${item.altura}</p>`;
-                    html += `<p>Posição: ${item.posicao}</p>`;
-                    html += `<p>Quantidade: ${item.quantidade}</p>`;
-                    html += `<p>Categoria: ${item.categoria}</p>`;
-                    html += `<p>Descrição: ${item.produto}</p>`;
-                    html += `<hr>`; // Linha separadora
+                    html += `<p><span>RUA:</span> ${item.rua}</p>`;
+                    html += `<p><span>RACK:</span> ${item.rack}</p>`;
+                    html += `<p><span>ALTURA:</span> ${item.altura}</p>`;
+                    html += `<p><span>POSIÇÃO:</span> ${item.posicao}</p>`;
+                    html += `<p><span>QUANTIDADE:</span> ${item.quantidade}</p>`;
+                    html += `<p><span>CATEGORIA:</span> ${item.categoria}</p>`;
+                    html += `<p><span>DESCRIÇÃO:</span> ${item.produto}</p>`;
                 });
                 html += "</div>";
                 resultadoDiv.innerHTML = html;
@@ -51,60 +48,59 @@
         }
 
         function pesquisarProduto() {
-        let codigo = document.getElementById('pesquisaCodigo').value.toLowerCase(); // Transforma em minúsculas
-        const resultadoDiv = document.getElementById('resultadoPesquisa');
-        resultadoDiv.innerHTML = ''; // Limpa os resultados antes de mostrar novos
-
-        fetch(`http://localhost:3000/pesquisar/${codigo}`, {
-            method: 'GET',
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (result.success) {
-                let html = "<h3 class='resultado-titulo'>Informações do Produto:</h3>";
-                html += "<div class='informacoes-produto'>";
-
-                result.dados.forEach(item => {
-                    html += `<p>RUA: ${item.rua}</p>`;
-                    html += `<p>RACK: ${item.rack}</p>`;
-                    html += `<p>ALTURA: ${item.altura}</p>`;
-                    html += `<p>POSIÇÃO: ${item.posicao}</p>`;
-                    html += `<p>QUANTIDADE: ${item.quantidade}</p>`;
-                    html += `<p>CATEGORIA: ${item.categoria}</p>`;
-                    html += `<p>DESCRIÇÃO: ${item.produto}</p>`;
-                    html += `<hr>`; // Linha separadora
-                });
-
-                resultadoDiv.innerHTML = html;
-                localStorage.setItem('dadosProduto', JSON.stringify(result.dados));
-            } else {
-                resultadoDiv.innerHTML = `<p>${result.message}</p>`;
-            }
-        })
-        .catch(error => console.error('Erro:', error));
-    }
-
-        function deletarProduto() {
-            const codigo = document.getElementById('pesquisaCodigo').value;
+            let codigo = document.getElementById('pesquisaCodigo').value.toLowerCase();
+            const resultadoDiv = document.getElementById('resultadoPesquisa');
+            resultadoDiv.innerHTML = '';
             fetch(`http://localhost:3000/pesquisar/${codigo}`, {
                 method: 'GET',
             })
             .then(response => response.json())
             .then(result => {
                 if (result.success) {
-                    const posicoes = result.dados.map(item => item.posicao);
-                    const posicaoParaDeletar = prompt("Qual posição você deseja deletar? Opções: " + posicoes.join(', '));
+                    let html = "<h3 class='resultado-titulo'>Informações do Produto:</h3>";
+                    html += "<div class='informacoes-produto'>";
+                    result.dados.forEach(item => {
+                        html += `<p>RUA: ${item.rua}</p>`;
+                        html += `<p>RACK: ${item.rack}</p>`;
+                        html += `<p>ALTURA: ${item.altura}</p>`;
+                        html += `<p>POSIÇÃO: ${item.posicao}</p>`;
+                        html += `<p>QUANTIDADE: ${item.quantidade}</p>`;
+                        html += `<p>CATEGORIA: ${item.categoria}</p>`;
+                        html += `<p>DESCRIÇÃO: ${item.produto}</p>`;
+                        html += `<hr>`;
+                    });
+                    resultadoDiv.innerHTML = html;
+                    localStorage.setItem('dadosProduto', JSON.stringify(result.dados));
+                } else {
+                    resultadoDiv.innerHTML = `<p>${result.message}</p>`;
+                }
+            })
+            .catch(error => console.error('Erro:', error));
+        }
 
-                    if (posicoes.includes(posicaoParaDeletar)) {
-                        fetch(`http://localhost:3000/deletar/${codigo}/${posicaoParaDeletar}`, {
+        function deletarProduto() {
+            const codigo = document.getElementById('pesquisaCodigo').value.toLowerCase();
+            fetch(`http://localhost:3000/pesquisar/${codigo}`, {
+                method: 'GET',
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    const posicoesOriginais = result.dados.map(item => item.posicao);
+                    const posicoesComparacao = result.dados.map(item => item.posicao.toLowerCase());
+                    const posicaoParaDeletar = prompt("Qual posição você deseja deletar? Opções: " + posicoesOriginais.join(', ')).toLowerCase();
+                    const indicePosicao = posicoesComparacao.indexOf(posicaoParaDeletar);
+                    if (indicePosicao !== -1) {
+                        const posicaoOriginal = posicoesOriginais[indicePosicao];
+                        fetch(`http://localhost:3000/deletar/${codigo}/${posicaoOriginal}`, {
                             method: 'DELETE',
                         })
                         .then(response => response.json())
                         .then(result => {
                             if (result.success) {
                                 alert(result.message);
-                                localStorage.removeItem('dadosProduto'); // Remove do localStorage
-                                document.getElementById('resultadoPesquisa').innerHTML = ''; // Limpa o resultado da pesquisa
+                                localStorage.removeItem('dadosProduto');
+                                document.getElementById('resultadoPesquisa').innerHTML = '';
                             } else {
                                 alert('Erro ao deletar o produto: ' + result.message);
                             }
@@ -120,55 +116,52 @@
             .catch(error => console.error('Erro:', error));
         }
 
-        //ARRUMAR, NAO FUNCIONA
         function atualizarProduto() {
-    const codigo = document.getElementById('pesquisaCodigo').value.toLowerCase(); // Converte para minúsculas
-    fetch(`http://localhost:3000/pesquisar/${codigo}`, {
-        method: 'GET',
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.success) {
-            const posicoes = result.dados.map(item => item.posicao);
-            const posicaoParaAtualizar = prompt("Qual posição você deseja atualizar? Opções: " + posicoes.join(', '));
-
-            if (posicoes.includes(posicaoParaAtualizar)) {
-                const campoParaAtualizar = prompt("Qual campo você deseja atualizar? (ex: rua, rack, altura, quantidade, categoria, produto)");
-                const novoValor = prompt(`Informe o novo valor para ${campoParaAtualizar}`);
-
-                const dadosAtualizados = {
-                    [campoParaAtualizar]: novoValor
-                };
-
-                fetch(`http://localhost:3000/atualizar/${codigo}/${posicaoParaAtualizar}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(dadosAtualizados)
-                })
-                .then(response => response.json())
-                .then(result => {
-                    if (result.success) {
-                        alert(result.message);
-                        localStorage.removeItem('dadosProduto'); // Remove do localStorage
-                        document.getElementById('resultadoPesquisa').innerHTML = ''; // Limpa o resultado da pesquisa
+            const codigo = document.getElementById('pesquisaCodigo').value.toLowerCase();
+            fetch(`http://localhost:3000/pesquisar/${codigo}`, {
+                method: 'GET',
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    const posicoesOriginais = result.dados.map(item => item.posicao);
+                    const posicoesComparacao = result.dados.map(item => item.posicao.toLowerCase());
+                    const posicaoParaAtualizar = prompt("Qual posição você deseja atualizar? Opções: " + posicoesOriginais.join(', ')).toLowerCase();
+                    const indicePosicao = posicoesComparacao.indexOf(posicaoParaAtualizar);
+                    if (indicePosicao !== -1) {
+                        const campoParaAtualizar = prompt("Qual campo você deseja atualizar? (ex: rua, rack, altura, quantidade, categoria, produto)").toLowerCase();
+                        const novoValor = prompt(`Informe o novo valor para ${campoParaAtualizar}`);
+                        const dadosAtualizados = {
+                            [campoParaAtualizar]: novoValor
+                        };
+                        const posicaoOriginal = posicoesOriginais[indicePosicao];
+                        fetch(`http://localhost:3000/atualizar/${codigo}/${posicaoOriginal}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(dadosAtualizados)
+                        })
+                        .then(response => response.json())
+                        .then(result => {
+                            if (result.success) {
+                                alert(result.message);
+                                localStorage.removeItem('dadosProduto');
+                                document.getElementById('resultadoPesquisa').innerHTML = '';
+                            } else {
+                                alert('Erro ao atualizar o produto: ' + result.message);
+                            }
+                        })
+                        .catch(error => console.error('Erro:', error));
                     } else {
-                        alert('Erro ao atualizar o produto: ' + result.message);
+                        alert("Posição inválida!");
                     }
-                })
-                .catch(error => console.error('Erro:', error));
-            } else {
-                alert("Posição inválida!");
-            }
-        } else {
-            alert('Erro ao pesquisar o produto: ' + result.message);
+                } else {
+                    alert('Erro ao pesquisar o produto: ' + result.message);
+                }
+            })
+            .catch(error => console.error('Erro:', error));
         }
-    })
-    .catch(error => console.error('Erro:', error));
-}
-
-
     </script>
 </body>
 </html>

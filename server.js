@@ -77,8 +77,9 @@ app.post('/cadastrar', (req, res) => {
 });
 
 // Rota para pesquisar produto pelo código
+// Rota para pesquisar produto pelo código
 app.get('/pesquisar/:codigo', (req, res) => {
-    const codigoPesquisado = req.params.codigo.trim();  // Remove espaços em branco
+    const codigoPesquisado = req.params.codigo.trim().toLowerCase();  // Remove espaços e transforma em minúsculas
 
     try {
         if (fs.existsSync('estoque.xlsx')) {
@@ -86,9 +87,9 @@ app.get('/pesquisar/:codigo', (req, res) => {
             const worksheet = workbook.Sheets['Base'];
             const data = XLSX.utils.sheet_to_json(worksheet);
 
-
+            // Filtra os produtos onde o código (convertido para minúsculas) coincide com o código pesquisado
             const resultados = data.filter(item =>
-                item.codigo && item.codigo.trim() === codigoPesquisado
+                item.codigo && item.codigo.trim().toLowerCase() === codigoPesquisado
             );
 
             if (resultados.length > 0) {
@@ -116,10 +117,12 @@ app.get('/pesquisar/:codigo', (req, res) => {
     }
 });
 
+
+// Rota para deletar produto
 // Rota para deletar produto
 app.delete('/deletar/:codigo/:posicao', (req, res) => {
-    const codigoParaDeletar = req.params.codigo.trim();
-    const posicaoParaDeletar = req.params.posicao.trim();
+    const codigoParaDeletar = req.params.codigo.trim().toLowerCase(); // Converte o código para minúsculas
+    const posicaoParaDeletar = req.params.posicao.trim().toLowerCase(); // Converte a posição para minúsculas
 
     try {
         if (fs.existsSync('estoque.xlsx')) {
@@ -127,10 +130,12 @@ app.delete('/deletar/:codigo/:posicao', (req, res) => {
             const worksheet = workbook.Sheets['Base'];
             const data = XLSX.utils.sheet_to_json(worksheet);
 
-            
-            const novosDados = data.filter(item => !(item.codigo === codigoParaDeletar && item.posicao === posicaoParaDeletar));
+            // Filtra os produtos onde o código e a posição (ambos convertidos para minúsculas) coincidem com os pesquisados
+            const novosDados = data.filter(item =>
+                !(item.codigo.trim().toLowerCase() === codigoParaDeletar && 
+                  item.posicao.trim().toLowerCase() === posicaoParaDeletar)
+            );
 
-         
             if (novosDados.length === data.length) {
                 return res.json({ success: false, message: 'Produto não encontrado para deleção.' });
             }
@@ -151,8 +156,8 @@ app.delete('/deletar/:codigo/:posicao', (req, res) => {
 
 // Rota para atualizar um produto
 app.put('/atualizar/:codigo/:posicao', (req, res) => {
-    const codigoParaAtualizar = req.params.codigo.trim();
-    const posicaoParaAtualizar = req.params.posicao.trim();
+    const codigoParaAtualizar = req.params.codigo.trim().toLowerCase(); // Converte o código para minúsculas
+    const posicaoParaAtualizar = req.params.posicao.trim().toLowerCase(); // Converte a posição para minúsculas
     const atualizacoes = req.body; // Os campos e valores que o usuário deseja atualizar
 
     try {
@@ -161,21 +166,30 @@ app.put('/atualizar/:codigo/:posicao', (req, res) => {
             const worksheet = workbook.Sheets['Base'];
             const data = XLSX.utils.sheet_to_json(worksheet);
 
-            // Localiza o produto que deve ser atualizado
-            const produtoIndex = data.findIndex(item => item.codigo === codigoParaAtualizar && item.posicao === posicaoParaAtualizar);
+            // Localiza o produto que deve ser atualizado, convertendo código e posição para minúsculas
+            const produtoIndex = data.findIndex(item => 
+                item.codigo.trim().toLowerCase() === codigoParaAtualizar &&
+                item.posicao.trim().toLowerCase() === posicaoParaAtualizar
+            );
 
             if (produtoIndex === -1) {
                 return res.json({ success: false, message: 'Produto não encontrado para atualização.' });
             }
 
-            // Atualiza os campos fornecidos
+            // Atualiza os campos fornecidos, ignorando a diferença entre maiúsculas e minúsculas
             Object.keys(atualizacoes).forEach(campo => {
-                if (data[produtoIndex][campo] !== undefined) {
-                    data[produtoIndex][campo] = atualizacoes[campo];
-                }
+                const campoParaAtualizar = campo.toLowerCase(); // Converte o nome do campo para minúsculas
+                const novoValor = atualizacoes[campo]; // Pega o valor enviado na requisição
+
+                // Converte os nomes dos campos do objeto original para minúsculas antes de atualizar
+                Object.keys(data[produtoIndex]).forEach(campoOriginal => {
+                    if (campoOriginal.toLowerCase() === campoParaAtualizar) {
+                        data[produtoIndex][campoOriginal] = novoValor; // Atualiza o campo com o novo valor
+                    }
+                });
             });
 
-            // Atualiza a planilha
+            // Atualiza a planilha com os novos dados
             const newWorksheet = XLSX.utils.json_to_sheet(data);
             workbook.Sheets['Base'] = newWorksheet;
             XLSX.writeFile(workbook, 'estoque.xlsx');
@@ -190,7 +204,6 @@ app.put('/atualizar/:codigo/:posicao', (req, res) => {
     }
 });
 
-// rota para atualizar
 
 app.listen(3000, () => {
     console.log('Servidor rodando na porta 3000');
